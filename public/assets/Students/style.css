@@ -1,0 +1,170 @@
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 30px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/*  Main Color */
+.main_color {
+    background:#022c46;
+    font-family: 'Ubuntu', serif;
+}
+
+/* Btn Light */
+.btn.btn-light {
+    font-weight: bold;
+    color: #022c46;
+    border-radius: 30px;
+    width: 25%;
+    text-transform: capitalize;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn.btn-light:hover {
+    outline: none;
+    border: none;
+    color: #fff;
+    background: transparent;
+    border: 2px solid #fff;
+}
+
+/* Logout Button */
+.btn.logout_btn {
+    border: 1px solid #fff;
+    background: transparent;
+    border-radius: 30px;
+    width: 25%;
+    color: #fff;
+    text-transform: capitalize;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn.logout_btn:hover {
+    outline: none;
+    border: none;
+    color: #022c46;
+    background: #fff;
+}
+
+/* View Button */
+.view_btn,
+.view_btn:hover {
+    border-radius: 30px;
+    background: #302b63;
+    outline: none;
+    border: none;
+}
+
+/* Edit Button */
+.edit_btn,
+.edit_btn:hover {
+    border-radius: 30px;
+    background: #f16101;
+    outline: none;
+    border: none;
+}
+
+/* Delete Btn */
+.delete_btn,
+.delete_btn:hover {
+    border-radius: 30px;
+    background: #022c46;
+    outline: none;
+    border: none;
+}
+
+/* Single Border */
+#single_border {
+    border-bottom: 1px solid #e5e5e5;
+    margin-top: 30px;
+}
+
+/* Display Image */
+img#display_image {
+    margin-top: -30px;
+    height: 100px;
+    width: 100px;
+}
+
+/* Image Upload */
+.custom-file-input:lang(en)~.custom-file-label::after {
+    content: "Upload";
+    color: #fff;
+    background: linear-gradient(225deg, #022c46, #f16101);
+}
+
+/* Label */
+label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #505458;
+    font-size: 16px;
+}
+
+/* Small Tag Model */
+small {
+    font-weight: normal;
+    font-size: 12px;
+    color: #505458;
+}
+
+/* Pagination */
+.page-link {
+    color: #022c46;
+    ;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.page-item.active .page-link,.page-link:hover {
+    z-index: 3;
+    color: #fff;
+    background: #022c46;
+    border-color: #022c46;
+}
+
+.page-item.active .page-link:hover {
+    color: #022c46;
+    background: #fff;
+    border: 2px solid #022c46;
+}
+
+/* Label */
+label {
+    font-weight: bold;
+}
+
+/* Close Button */
+button[type=button].close {
+    outline: none;
+}
+
+button#disabled_button:disabled {
+    pointer-events: all !important;
+    cursor: not-allowed;
+}
+
+.margin{
+    margin-top: 50px;
+}
+
+#alert {
+    display: none;
+}
