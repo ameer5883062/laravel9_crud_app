@@ -198,3 +198,6 @@ class StudentsController extends Controller
         return redirect('/')->with('status_title', 'Data Deleted!')->with('status_text', 'Student has been deleted successfully!');
     }
 }
+
+
+// This is demo
