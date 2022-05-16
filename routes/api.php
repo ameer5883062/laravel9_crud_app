@@ -13,16 +13,14 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/students_list', [StudentsController::class, 'index']);
-Route::post('/add_student', [StudentsController::class, 'store']);
-Route::get('/view_student/{id}', [StudentsController::class, 'show']);
-Route::get('/edit_student/{id}', [StudentsController::class, 'edit']);
-Route::post('/update_student/{id}', [StudentsController::class, 'update']);
-Route::delete('/delete_student/{id}', [StudentsController::class, 'destroy']);
-
-
-
-
+Route::controller(StudentsController::class)->group(function () {
+    Route::get('/students_list', 'index');
+    Route::post('/add_student', 'store');
+    Route::get('/view_student/{id}', 'show');
+    Route::get('/edit_student/{id}', 'edit');
+    Route::post('/update_student/{id}', 'update');
+    Route::delete('/delete_student/{id}', 'destroy');
+});
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

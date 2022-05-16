@@ -20,7 +20,45 @@ class StudentsController extends Controller
      */
     public function index()
     {
-        $students_data = DB::table('students')->orderBy('id', 'DESC')->get();
+        $students_data = DB::table('students')->get();
+
+        $student_images =
+            DB::table('students')
+            ->join('student_images', 'students.id', '=', 'student_images.student_id')
+            ->select('student_images.*')
+            ->get();
+
+        if ($students_data) {
+            // Image check
+            if ($student_images[0]->image == null) {
+                $student_images[0]->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
+            } else {
+                $student_images[0]->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $student_images[0]->image;
+            }
+
+            $response = [
+                'status' => true,
+                'message' => "Students data shown successfully!",
+                'student' => $students_data,
+                'student_image' => $student_images,
+            ];
+
+            return response()->json($response);
+        } else {
+            $response = [
+                'status' => false,
+                'message' => "Students data not found!",
+                'students' => null
+            ];
+
+            return response()->json($response);
+        }
+
+
+        $students_data = DB::table('students')
+            ->join('student_images', 'students.id', '=', 'student_images.student_id')
+            ->select('students.*', 'student_images.*')
+            ->get();
 
         foreach ($students_data as $key => $data) {
             if ($students_data[$key]->image == null) {
@@ -67,8 +105,6 @@ class StudentsController extends Controller
      */
     public function store(Request $request)
     {
-        $imageName = "";
-        $default_image = "";
 
         $name = $request->get('name');
         $father_name = $request->get('father_name');
@@ -78,44 +114,68 @@ class StudentsController extends Controller
         $gender = $request->get('gender');
         $image = $request->file('image');
 
-        if (empty($image)) {
-            $default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
-        } else {
-            $imageName =  $image->getClientOriginalName();
+        $email_address_check = DB::table('students')->where('email_address', '=', $email_address)->first();
 
-            $path =  public_path('/assets/Students/upload_images/');
-
-            $request->image->move($path, $imageName);
-        }
-
-        $NewStudent = [
-            'name' => $name,
-            'father_name' => $father_name,
-            'email_address' => $email_address,
-            'contact_no' => $contact_no,
-            'address' => $address,
-            'gender' => $gender,
-            'image' => $imageName,
-            'default_image' => $default_image,
-        ];
-
-        if (($name != null) && ($father_name != null) && ($email_address != null) && ($contact_no != null) && ($address != null) && ($gender != null)) {
-
-            DB::table('students')->insert($NewStudent);
-
-            $response = [
-                'status' => true,
-                'message' => "New student has been added successfully!"
-            ];
-
-            return response()->json($response);
-        } else {
+        if (isset($email_address_check)) {
             $response = [
                 'status' => false,
-                'message' => "New student has not been added!",
+                'message' => "Email Address already taken please change it!",
             ];
 
             return response()->json($response);
+        } else {
+
+            $NewStudent = [
+                'name' => $name,
+                'father_name' => $father_name,
+                'email_address' => $email_address,
+                'contact_no' => $contact_no,
+                'address' => $address,
+                'gender' => $gender,
+            ];
+
+            if (($name != null) && ($father_name != null) && ($email_address != null) && ($contact_no != null) && ($address != null) && ($gender != null)) {
+
+                $Student_Added = DB::table('students')->insert($NewStudent);
+
+                $GetLastInsertedID = DB::getPdo()->lastInsertId($Student_Added);
+
+                $imageName = "";
+                $default_image = "";
+
+                if (empty($image)) {
+                    $default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
+                } else {
+                    $imageName =  $image->getClientOriginalName();
+
+                    $path =  public_path('/assets/Students/upload_images/');
+
+                    $request->image->move($path, $imageName);
+                }
+
+                $student_image =
+                    [
+                        'image' => $imageName,
+                        'default_image' => $default_image,
+                        'student_id' => $GetLastInsertedID
+                    ];
+
+                DB::table('student_images')->insert($student_image);
+
+                $response = [
+                    'status' => true,
+                    'message' => "New student has been added successfully!"
+                ];
+
+                return response()->json($response);
+            } else {
+                $response = [
+                    'status' => false,
+                    'message' => "New student has not been added!",
+                ];
+
+                return response()->json($response);
+            }
         }
     }
 
@@ -129,17 +189,27 @@ class StudentsController extends Controller
     {
         $student_data = DB::table('students')->find($id);
 
+        $student_image =
+            DB::table('student_images')
+            ->select('student_images.*')
+            ->where('student_id', $id)
+            ->get();
+
         if ($student_data) {
             // Image check
-            if ($student_data->image == null) {
-                $student_data->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
+            if ($student_image[0]->image == null) {
+                $student_image[0]->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
             } else {
-                $student_data->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $student_data->image;
+                $student_image[0]->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $student_image[0]->image;
             }
+
             $response = [
                 'status' => true,
                 'message' => "Student data of ID: $id shown successfully!",
-                'student' => $student_data
+                'data' => [
+                    'student' => $student_data,
+                    'student_image' => $student_image[0]
+                ]
             ];
 
             return response()->json($response);

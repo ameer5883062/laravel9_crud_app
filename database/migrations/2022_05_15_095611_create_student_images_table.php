@@ -17,15 +17,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('student_images', function (Blueprint $table) {
             $table->id();
 
-            $table->string('name');
-            $table->string('father_name');
-            $table->string('contact_no');
-            $table->string('email_address');
-            $table->string('address');
-            $table->string('gender');
+            $table->integer('student_id');
+            $table->string('image')->nullable();
+            $table->string('default_image')->nullable();
 
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
@@ -39,6 +36,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('student_images');
     }
 };

@@ -108,8 +108,10 @@ Edit Student
                     <div class="col-md-6 col-sm-12">
                         <label for="gender" class="mr-sm-2">Gender</label>
                         <select name="gender" id="gender" class="form-select">
-                            <option value="Male" @if ($students->gender == "Male") {{ 'selected' }} @endif>Male</option>
-                            <option value="Female" @if ($students->gender == "Female") {{ 'selected' }} @endif>Female
+                            <option value="Male" @if ($students->gender == "Male") {{ 'selected' }}
+                                @endif>Male</option>
+                            <option value="Female" @if ($students->gender == "Female") {{ 'selected' }}
+                                @endif>Female
                             </option>
                         </select>
                     </div><!-- col-md-6 col-sm-12 end -->
@@ -125,10 +127,12 @@ Edit Student
                                 </div><!-- custom-file end -->
                             </div><!-- col-sm-8 col-md-10 end -->
                             <div class="col-sm-4 col-md-2">
-                                @if (($students->image == NULL) || ($students->image == ""))
-                                <img src="{{ $students->default_image }}" class="rounded-circle" id="display_image">
+                                @if (($student_image[0]->image
+                                == ""))
+                                <img src="{{ $student_image[0]->default_image }}" class="rounded-circle"
+                                    id="display_image">
                                 @else
-                                <img src="{{ URL::asset('http://127.0.0.1:8000/assets/Students/upload_images/'.$students->image) }}"
+                                <img src="{{ URL::asset('http://127.0.0.1:8000/assets/Students/upload_images/'.$student_image[0]->image) }}"
                                     class="rounded-circle" id="display_image">
                                 @endif
                             </div><!-- col-sm-4 col-md-2 end -->

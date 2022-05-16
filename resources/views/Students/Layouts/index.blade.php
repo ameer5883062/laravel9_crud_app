@@ -88,18 +88,18 @@
 
             $('body').on('click', '#student_detail_modal', function () {
                     var URL = $(this).data('url');
-                    $.get(URL, function (data) {
+                    $.get(URL, function (response) {
                     $('#Students_Detail_Modal').modal('show');
-                    $('#name').val(data.name);
-                    $('#father_name').val(data.father_name);
-                    $('#email_address').val(data.email_address);
-                    $('#address').val(data.address);
-                    $('#contact_no').val(data.contact_no);
-                    $('#gender').val(data.gender);
-                    if ((data.image == "") || (data.image == null)) {
-                    $('#image').attr('src', data.default_image);
+                    $('#name').val(response.student.name);
+                    $('#father_name').val(response.student.father_name);
+                    $('#email_address').val(response.student.email_address);
+                    $('#address').val(response.student.address);
+                    $('#contact_no').val(response.student.contact_no);
+                    $('#gender').val(response.student.gender);
+                    if ((response.student_images[0].image == "") || (response.student_images[0].image == null)) {
+                    $('#image').attr('src', response.student_images[0].default_image);
                     } else {
-                    $('#image').attr('src', '/assets/Students/upload_images/' + data.image);
+                    $('#image').attr('src', '/assets/Students/upload_images/' + response.student_images[0].image);
                     }
                 })
             });

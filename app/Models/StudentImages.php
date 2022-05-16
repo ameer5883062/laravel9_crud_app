@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sudent extends Model
+class StudentImages extends Model
 {
     use HasFactory;
 
@@ -17,11 +17,8 @@ class Sudent extends Model
     protected $primaryKey = 'id';
     protected $fillable =
     [
-        'name',
-        'father_name',
-        'contact_no',
-        'email_address',
-        'address',
-        'gender',
+        'student_id',
+        'image',
+        'default_image'
     ];
 }

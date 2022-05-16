@@ -19,7 +19,10 @@ class StudentsController extends Controller
      */
     public function index()
     {
-        $students_data = DB::table('students')->orderBy('id', 'DESC')->get();
+        $students_data = DB::table('students')
+            ->join('student_images', 'students.id', '=', 'student_images.student_id')
+            ->select('students.*', 'student_images.*')
+            ->get();
 
         return view('Students.Pages.index', ['students' => $students_data]);
     }
@@ -51,14 +54,25 @@ class StudentsController extends Controller
             'gender' => 'required',
         ]);
 
-
-        $imageName = "";
-        $default_image = "";
-
         if (isset($Validation)) {
 
-            $image = $request->file('image');
+            $NewStudent = [
+                'name' => $request->get('name'),
+                'father_name' => $request->get('father_name'),
+                'email_address' => $request->get('email_address'),
+                'contact_no' => $request->get('contact_no'),
+                'address' => $request->get('address'),
+                'gender' => $request->get('gender'),
+            ];
 
+            $Student_Added = DB::table('students')->insert($NewStudent);
+
+            $GetLastInsertedID = DB::getPdo()->lastInsertId($Student_Added);
+
+            $imageName = "";
+            $default_image = "";
+
+            $image = $request->file('image');
 
             if (empty($image)) {
                 $default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
@@ -70,18 +84,14 @@ class StudentsController extends Controller
                 $request->image->move($path, $imageName);
             }
 
-            $NewStudent = [
-                'name' => $request->get('name'),
-                'father_name' => $request->get('father_name'),
-                'email_address' => $request->get('email_address'),
-                'contact_no' => $request->get('contact_no'),
-                'address' => $request->get('address'),
-                'gender' => $request->get('gender'),
-                'image' => $imageName,
-                'default_image' => $default_image,
-            ];
+            $response =
+                [
+                    'image' => $imageName,
+                    'default_image' => $default_image,
+                    'student_id' => $GetLastInsertedID
+                ];
 
-            DB::table('students')->insert($NewStudent);
+            DB::table('student_images')->insert($response);
 
             Session::flash('status_icon', 'success');
             return redirect('/')->with('status_title', 'Data Added!')->with('status_text', 'New student has been added successfully!');
@@ -96,9 +106,21 @@ class StudentsController extends Controller
      */
     public function show($id)
     {
-
         $student_data = DB::table('students')->find($id);
-        return $student_data;
+
+        $student_images =
+            DB::table('student_images')
+            ->select('student_images.*')
+            ->where('student_id', $student_data->id)
+            ->get();
+
+        $students_detail =
+            [
+                'student' => $student_data,
+                'student_images' => $student_images
+            ];
+
+        return response()->json($students_detail);
     }
 
     /**
@@ -109,8 +131,16 @@ class StudentsController extends Controller
      */
     public function edit($id)
     {
+
         $student_data = DB::table('students')->find($id);
-        return view('Students.Pages.EditStudents', ['students' =>  $student_data]);
+
+        $student_image =
+            DB::table('student_images')
+            ->select('student_images.*')
+            ->where('student_id', $student_data->id)
+            ->get();
+
+        return view('Students.Pages.EditStudents', ['students' =>  $student_data, 'student_image' => $student_image]);
     }
 
     /**
@@ -128,27 +158,10 @@ class StudentsController extends Controller
             'email_address' => 'required|email',
             'contact_no' => 'required|min:11|max:11',
             'address' => 'required',
-            'image' => 'required',
+            // 'image' => 'required',   
         ]);
 
-
-        $imageName = "";
-        $default_image = "";
-
         if (isset($Validation)) {
-
-            $image = $request->file('image');
-
-
-            if (empty($image)) {
-                $default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
-            } else {
-                $imageName =  $image->getClientOriginalName();
-
-                $path =  public_path('/assets/Students/upload_images/');
-
-                $request->image->move($path, $imageName);
-            }
 
             $Student = [
                 'name' => $request->get('name'),
@@ -157,22 +170,44 @@ class StudentsController extends Controller
                 'contact_no' => $request->get('contact_no'),
                 'address' => $request->get('address'),
                 'gender' => $request->get('gender'),
-                'image' => $imageName,
-                'default_image' => $default_image,
             ];
 
-            $student_data = DB::table('students')->find($request->id);
+            $Student_Updated = DB::table('students')->where('id', $id)->update($Student);
 
-            if ($student_data->default_image != "") {
-                DB::table('students')->where('id', $id)->update($Student);
+            DB::getPdo()->lastInsertId($Student_Updated);
+
+            $student_image = DB::table('student_images')->find($id);
+
+            $imageName = "";
+            $default_image = "";
+
+            $image = $request->file('image');
+
+            if (empty($image)) {
+                $default_image =  "/assets/Students/upload_images/$student_image->image";
+
+                $UpdatedStudent = [
+                    'image' => $imageName,
+                    'default_image' => $default_image,
+                ];
+
+                DB::table('student_images')->where('id', $id)->update($UpdatedStudent);
 
                 Session::flash('status_icon', 'success');
                 return redirect('/')->with('status_title', 'Data updated!')->with('status_text', 'Student has been updated successfully!');
             } else {
+                $imageName =  $image->getClientOriginalName();
 
-                unlink(public_path('/assets/Students/upload_images/' . $student_data->image));
+                $path =  public_path('/assets/Students/upload_images/');
 
-                DB::table('students')->where('id', $id)->update($Student);
+                $request->image->move($path, $imageName);
+
+                $UpdatedStudent = [
+                    'image' => $imageName,
+                    'default_image' => $default_image,
+                ];
+
+                DB::table('student_images')->where('id', $id)->update($UpdatedStudent);
 
                 Session::flash('status_icon', 'success');
                 return redirect('/')->with('status_title', 'Data updated!')->with('status_text', 'Student has been updated successfully!');
@@ -188,13 +223,24 @@ class StudentsController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $student_data = DB::table('students')->find($request->id);
+        DB::table('students')->find($request->id);
 
-        unlink(public_path('/assets/Students/upload_images/' . $student_data->image));
+        $student_images = DB::table('student_images')->find($request->id);
 
-        DB::table('students')->delete($id);
+        if ($student_images->image == "") {
+            DB::table('students')->delete($id);
+            DB::table('student_images')->delete($id);
 
-        Session::flash('status_icon', 'success');
-        return redirect('/')->with('status_title', 'Data Deleted!')->with('status_text', 'Student has been deleted successfully!');
+            Session::flash('status_icon', 'success');
+            return redirect('/')->with('status_title', 'Data Deleted!')->with('status_text', 'Student has been deleted successfully!');
+        } else {
+            unlink(public_path('/assets/Students/upload_images/' . $student_images->image));
+
+            DB::table('students')->delete($id);
+            DB::table('student_images')->delete($id);
+
+            Session::flash('status_icon', 'success');
+            return redirect('/')->with('status_title', 'Data Deleted!')->with('status_text', 'Student has been deleted successfully!');
+        }
     }
 }
