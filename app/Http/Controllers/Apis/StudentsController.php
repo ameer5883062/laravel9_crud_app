@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 // DataBase
 use Illuminate\Support\Facades\DB;
 
-// Session
-use Illuminate\Support\Facades\Session;
-
 class StudentsController extends Controller
 {
     /**
@@ -28,51 +25,15 @@ class StudentsController extends Controller
             ->select('student_images.*')
             ->get();
 
-        if ($students_data) {
-            // Image check
-            if ($student_images[0]->image == null) {
-                $student_images[0]->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
-            } else {
-                $student_images[0]->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $student_images[0]->image;
-            }
+        if ($students_data->count() >= 1) {
 
             $response = [
                 'status' => true,
                 'message' => "Students data shown successfully!",
-                'student' => $students_data,
-                'student_image' => $student_images,
-            ];
-
-            return response()->json($response);
-        } else {
-            $response = [
-                'status' => false,
-                'message' => "Students data not found!",
-                'students' => null
-            ];
-
-            return response()->json($response);
-        }
-
-
-        $students_data = DB::table('students')
-            ->join('student_images', 'students.id', '=', 'student_images.student_id')
-            ->select('students.*', 'student_images.*')
-            ->get();
-
-        foreach ($students_data as $key => $data) {
-            if ($students_data[$key]->image == null) {
-                $students_data[$key]->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
-            } else {
-                $students_data[$key]->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $students_data[$key]->image;
-            }
-        }
-
-        if ($students_data->count() > 0) {
-            $response = [
-                'status' => true,
-                'message' => "Students data shown successfully!",
-                'students' => $students_data
+                'data' => [
+                    'student' => $students_data,
+                    'student_image' => $student_images,
+                ]
             ];
 
             return response()->json($response);
@@ -234,19 +195,27 @@ class StudentsController extends Controller
     {
         $student_data = DB::table('students')->find($id);
 
-        if ($student_data) {
+        $student_image =
+            DB::table('student_images')
+            ->select('student_images.*')
+            ->where('student_id', $id)
+            ->get();
 
+        if ($student_data) {
             // Image check
-            if ($student_data->image == null) {
-                $student_data->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
+            if ($student_image[0]->image == null) {
+                $student_image[0]->default_image = "http://127.0.0.1:8000/assets/Students/images/no_image.png";
             } else {
-                $student_data->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $student_data->image;
+                $student_image[0]->image = 'http://127.0.0.1:8000/assets/Students/upload_images/' . $student_image[0]->image;
             }
 
             $response = [
                 'status' => true,
                 'message' => "Student data of ID: $id shown successfully!",
-                'student' => $student_data
+                'data' => [
+                    'student' => $student_data,
+                    'student_image' => $student_image[0]
+                ]
             ];
 
             return response()->json($response);
@@ -272,6 +241,8 @@ class StudentsController extends Controller
     {
         $student_data = DB::table('students')->find($id);
 
+        $student_image = DB::table('student_images')->find($id);
+
         $imageName = "";
         $default_image = "";
 
@@ -283,25 +254,32 @@ class StudentsController extends Controller
         $gender = $request->get('gender');
         $image = $request->file('image');
 
+        $UpdatedStudent = [
+            'name' => $request->get('name'),
+            'father_name' => $request->get('father_name'),
+            'email_address' => $request->get('email_address'),
+            'contact_no' => $request->get('contact_no'),
+            'address' => $request->get('address'),
+            'gender' => $request->get('gender'),
+        ];
+
         if ($student_data) {
 
             if (($name != null) && ($father_name != null) && ($email_address != null) && ($contact_no != null) && ($address != null) && ($gender != null)) {
 
                 if (empty($image)) {
-                    $default_image =  "/assets/Students/upload_images/$student_data->image";
+                    $default_image = "/assets/Students/upload_images/$student_image->image";
+
+                    $Student_Updated = DB::table('students')->where('id', $id)->update($UpdatedStudent);
+
+                    DB::getPdo()->lastInsertId($Student_Updated);
 
                     $UpdatedStudent = [
-                        'name' => $name,
-                        'father_name' => $father_name,
-                        'email_address' => $email_address,
-                        'contact_no' => $contact_no,
-                        'address' => $address,
-                        'gender' => $gender,
                         'image' => $imageName,
                         'default_image' => $default_image,
                     ];
 
-                    DB::table('students')->where('id', $id)->update($UpdatedStudent);
+                    DB::table('student_images')->where('id', $id)->update($UpdatedStudent);
 
                     $response = [
                         'status' => true,
@@ -310,24 +288,23 @@ class StudentsController extends Controller
 
                     return response()->json($response);
                 } else {
-                    $imageName =  $image->getClientOriginalName();
 
-                    $path =  public_path('/assets/Students/upload_images/');
+                    $imageName = $image->getClientOriginalName();
+
+                    $path = public_path('/assets/Students/upload_images/');
 
                     $request->image->move($path, $imageName);
 
+                    $Student_Updated = DB::table('students')->where('id', $id)->update($UpdatedStudent);
+
+                    DB::getPdo()->lastInsertId($Student_Updated);
+
                     $UpdatedStudent = [
-                        'name' => $name,
-                        'father_name' => $father_name,
-                        'email_address' => $email_address,
-                        'contact_no' => $contact_no,
-                        'address' => $address,
-                        'gender' => $gender,
                         'image' => $imageName,
                         'default_image' => $default_image,
                     ];
 
-                    DB::table('students')->where('id', $id)->update($UpdatedStudent);
+                    DB::table('student_images')->where('id', $id)->update($UpdatedStudent);
 
                     $response = [
                         'status' => true,
@@ -336,13 +313,6 @@ class StudentsController extends Controller
 
                     return response()->json($response);
                 }
-            } else {
-                $response = [
-                    'status' => false,
-                    'message' => "Student of ID: $id has not been updated!"
-                ];
-
-                return response()->json($response);
             }
         } else {
             $response = [
@@ -363,12 +333,16 @@ class StudentsController extends Controller
     public function destroy($id)
     {
 
-        $student_data = DB::table('students')->find($id);
+        $student_data =
+            DB::table('students')->find($id);
+
+        $student_image = DB::table('student_images')->find($id);
 
         if ($student_data) {
-            if ($student_data->default_image != null) {
+            if ($student_image->default_image != null) {
 
                 DB::table('students')->delete($id);
+                DB::table('student_images')->delete($id);
 
                 $response = [
                     'status' => true,
@@ -378,9 +352,10 @@ class StudentsController extends Controller
                 return response()->json($response);
             } else {
 
-                unlink(public_path('/assets/Students/upload_images/' . $student_data->image));
+                unlink(public_path('/assets/Students/upload_images/' . $student_image->image));
 
                 DB::table('students')->delete($id);
+                DB::table('student_images')->delete($id);
 
                 $response = [
                     'status' => true,

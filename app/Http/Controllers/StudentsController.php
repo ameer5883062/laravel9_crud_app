@@ -158,7 +158,6 @@ class StudentsController extends Controller
             'email_address' => 'required|email',
             'contact_no' => 'required|min:11|max:11',
             'address' => 'required',
-            // 'image' => 'required',   
         ]);
 
         if (isset($Validation)) {
